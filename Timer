@@ -1,0 +1,100 @@
+import tkinter as tk
+from time import time, sleep
+import threading
+class TimerApp:
+    def __init__(self, root):
+        self.root = root
+        self.root.title("Timer Application")
+        self.running = False
+        self.time_left = 0
+        self.start_time = 0
+        self.elapsed_time = 0
+        self.create_frames()
+
+        self.time_label = tk.Label(self.timer_frame, text="00:00:00", font=("Helvetica", 48))
+        self.time_label.pack()
+
+        self.create_countdown_controls()
+        self.create_stopwatch_controls()
+    def create_frames(self):
+        self.timer_frame = tk.Frame(self.root)
+        self.timer_frame.pack(pady=20)
+
+        self.control_frame = tk.Frame(self.root)
+        self.control_frame.pack(pady=20)
+
+        self.stopwatch_frame = tk.Frame(self.root)
+        self.stopwatch_frame.pack(pady=20)
+
+    def create_countdown_controls(self):
+        tk.Label(self.control_frame, text="Countdown Timer", font=("Helvetica", 16)).pack()
+
+        self.time_entry = tk.Entry(self.control_frame, width=10)
+        self.time_entry.pack(side=tk.LEFT, padx=5)
+        self.time_entry.insert(0, "00:01:00")
+
+        self.start_button = tk.Button(self.control_frame, text="Start Countdown", command=self.start_countdown)
+        self.start_button.pack(side=tk.LEFT, padx=5)
+
+        self.stop_button = tk.Button(self.control_frame, text="Stop Countdown", command=self.stop_timer)
+        self.stop_button.pack(side=tk.LEFT, padx=5)
+
+    def create_stopwatch_controls(self):
+        tk.Label(self.stopwatch_frame, text="Stopwatch", font=("Helvetica", 16)).pack()
+
+        self.start_stopwatch_button = tk.Button(self.stopwatch_frame, text="Start Stopwatch", command=self.start_stopwatch)
+        self.start_stopwatch_button.pack(side=tk.LEFT, padx=5)
+
+        self.stop_stopwatch_button = tk.Button(self.stopwatch_frame, text="Stop Stopwatch", command=self.stop_timer)
+        self.stop_stopwatch_button.pack(side=tk.LEFT, padx=5)
+
+        self.reset_stopwatch_button = tk.Button(self.stopwatch_frame, text="Reset Stopwatch", command=self.reset_stopwatch)
+        self.reset_stopwatch_button.pack(side=tk.LEFT, padx=5)
+
+    def start_countdown(self):
+        try:
+            h, m, s = map(int, self.time_entry.get().split(':'))
+            self.time_left = h * 3600 + m * 60 + s
+            self.running = True
+            self.update_countdown()
+        except ValueError:
+            self.time_label.config(text="Invalid Time")
+
+    def update_countdown(self):
+        if self.running and self.time_left > 0:
+            self.time_left -= 1
+            self.time_label.config(text=self.format_time(self.time_left))
+            self.root.after(1000, self.update_countdown)
+        elif self.time_left == 0:
+            self.time_label.config(text="Time is up!")
+
+    def start_stopwatch(self):
+        if not self.running:
+            self.start_time = time()
+            self.running = True
+            self.update_stopwatch()
+
+    def update_stopwatch(self):
+        if self.running:
+            self.elapsed_time = time() - self.start_time
+            self.time_label.config(text=self.format_time(self.elapsed_time))
+            self.root.after(50, self.update_stopwatch)
+
+    def stop_timer(self):
+        self.running = False
+
+    def reset_stopwatch(self):
+        self.running = False
+        self.elapsed_time = 0
+        self.time_label.config(text="00:00:00")
+
+    def format_time(self, seconds):
+        hours = int(seconds // 3600)
+        minutes = int((seconds % 3600) // 60)
+        seconds = int(seconds % 60)
+        return f"{hours:02}:{minutes:02}:{seconds:02}"
+
+if __name__ == "__main__":
+    root = tk.Tk()
+    app = TimerApp(root)
+    root.mainloop()
